@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jogoteca</title>
+<style>
+  :root{--bg:#0b1117;--card:#0f1722;--muted:#9fb3c8;--txt:#e6edf3;--acc:#22d3ee;--border:#1f2937}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 system-ui,Segoe UI,Roboto,Inter,Arial}
+  .wrap{max-width:900px;margin:24px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+  h1{margin:0 0 10px;color:var(--acc)}
+  input,button{padding:10px;border-radius:10px;border:1px solid var(--border);background:#0b1220;color:var(--txt)}
+  button{background:var(--acc);color:#05202a;border:0;font-weight:700;cursor:pointer}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-top:1px solid var(--border);padding:10px;text-align:left}
+  small{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Jogoteca</h1>
+    <div class="row">
+      <input id="title" placeholder="Título do jogo">
+      <input id="studio" placeholder="Estúdio">
+      <button id="add">Adicionar</button>
+    </div>
+    <table>
+      <thead><tr><th>ID</th><th>Título</th><th>Estúdio</th><th>Ações</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="4">Carregando…</td></tr></tbody>
+    </table>
+    <small>API: <code>/api/games</code></small>
+  </div>
+</div>
+<script>
+const API="/api/games";
+const $tbody=document.getElementById('tbody');
+
+function row(g){
+  return `<tr>
+    <td>${g.id}</td><td>${g.title}</td><td>${g.studio}</td>
+    <td><button onclick="del(${g.id})">Excluir</button></td>
+  </tr>`;
+}
+async function load(){
+  const r=await fetch(API); const data=await r.json();
+  $tbody.innerHTML = data.length? data.map(row).join(''): `<tr><td colspan="4">Sem jogos.</td></tr>`;
+}
+async function add(){
+  const title=document.getElementById('title').value.trim();
+  const studio=document.getElementById('studio').value.trim();
+  if(!title||!studio) return;
+  await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,studio})});
+  document.getElementById('title').value=''; document.getElementById('studio').value='';
+  load();
+}
+async function del(id){ await fetch(`${API}/${id}`,{method:'DELETE'}); load(); }
+
+document.getElementById('add').addEventListener('click',add);
+load();
+</script>
+</body>
+</html>
